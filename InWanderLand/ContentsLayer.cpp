@@ -128,68 +128,40 @@ void GraphicsTest()
     auto systemComponent = skillPreviewSystem->AddComponent<SkillPreviewSystem>();
     systemComponent->Init();
     systemComponent->camObj = camObj;
-
     const yunuGI::IResourceManager* _resourceManager = yunutyEngine::graphics::Renderer::SingleInstance().GetResourceManager();
     //_resourceManager->LoadFile("FBX/VFX");
-    auto& animationList = _resourceManager->GetAnimationList();
-    yunuGI::IAnimation* animation = nullptr;
-    yunuGI::IAnimation* animation2 = nullptr;
-    yunuGI::IAnimation* animation3 = nullptr;
-
-    for (auto& i : animationList)
+    
     {
-        if (i->GetName() == L"Rig_Robin_arpbob|Ani_Robin_Idle")
-        {
-            animation = i;
-            animation->SetLoop(true);
-        }
-
-        if (i->GetName() == L"Rig_Robin_arpbob|Ani_Robin_Walk")
-        {
-            animation2 = i;
-            animation2->SetLoop(true);
-        }
-        if (i->GetName() == L"Rig_Robin_arpbob|Ani_Robin_Skill1")
-        {
-            animation3 = i;
-        }
+		yunuGI::IShader* vs = _resourceManager->GetShader(L"TestDecalVS.cso");
+		yunuGI::IShader* ps = _resourceManager->GetShader(L"TestDecalPS.cso");
+        yunuGI::ITexture* robinWSkillTexture = _resourceManager->GetTexture(wanderResources::texture::ROBIN_W_TEXTURE);
+        yunuGI::IMesh* cubeMesh = _resourceManager->GetMesh(L"Cube");
+        auto obj = Scene::getCurrentScene()->AddGameObject();
+        obj->GetTransform()->SetLocalScale(Vector3d{ 10,10,10 });
+        auto pos = obj->GetTransform()->GetWorldPosition();
+        systemComponent->ShowRobinWSkill(pos, 8);
+		{
+			auto circleOne = Scene::getCurrentScene()->AddGameObject();
+			circleOne->SetParent(obj);
+			auto circleOneRenderer = circleOne->AddComponent<yunutyEngine::graphics::StaticMeshRenderer>();
+			circleOneRenderer->GetGI().SetMesh(cubeMesh);
+			circleOneRenderer->GetGI().GetMaterial()->SetVertexShader(vs);
+			circleOneRenderer->GetGI().GetMaterial()->SetPixelShader(ps);
+			circleOneRenderer->GetGI().GetMaterial()->SetTexture(yunuGI::Texture_Type::Temp0, robinWSkillTexture);
+			circleOneRenderer->GetGI().GetMaterial()->SetColor(wanderResources::unitColor::ROBIN_COLOR);
+		}
     }
-
-    {
-        auto obj2 = Scene::getCurrentScene()->AddGameObject();
-        auto test = obj2->AddComponent<TestComponent4>();
-
-        auto obj = Scene::getCurrentScene()->AddGameObjectFromFBX("SKM_Robin");
-        auto anim = obj->GetComponent<yunutyEngine::graphics::Animator>();
-        anim->PushAnimation(animation);
-        anim->PushAnimation(animation2);
-        anim->Play(animation);
-
-        test->anim = anim;
-        test->idle = animation;
-        test->walk = animation2;
-    }
-
-    /*{
-        auto obj = Scene::getCurrentScene()->AddGameObjectFromFBX("SM_Stage1_Floor_01");
-
-    }
-
-    {
-        auto obj = Scene::getCurrentScene()->AddGameObjectFromFBX("VFX_Monster2_Skill_Preview");
-        obj->AddComponent<VFXAnimator>();
-        obj->GetTransform()->SetLocalPosition(Vector3d{ 0,0,0 });
-    }
-    {
-        auto obj = Scene::getCurrentScene()->AddGameObjectFromFBX("SM_Temple_Floor");
-        obj->GetTransform()->SetLocalPosition(Vector3d{ 0,0,-20 });
-        auto test = obj->AddComponent<TestComponent4>();
-        test->sys = systemComponent;
-    }*/
+	{
+		auto obj = Scene::getCurrentScene()->AddGameObjectFromFBX("SM_Temple_Floor");
+	}
+	{
+		auto obj = Scene::getCurrentScene()->AddGameObjectFromFBX("SM_Stage1_Floor_01");
+        auto pos = obj->GetTransform()->GetWorldPosition();
+        pos.z += 20;
+        obj->GetTransform()->SetWorldPosition(pos);
+	}
 
     yunutyEngine::graphics::Renderer::SingleInstance().SortByCameraDirection();
-    //yunutyEngine::graphics::Renderer::SingleInstance().SetUseIBL(true);
-    //yunutyEngine::graphics::Renderer::SingleInstance().SortByCameraDirection();
 }
 
 void application::contents::ContentsLayer::SetInputControl(bool control)

@@ -40,12 +40,12 @@ VertexOut main(VertexIn input)
     
     float2 tempUV = input.lightUV;
     tempUV.x *= lightMapUV[input.instanceID].scaling.x;
+    tempUV.x += (lightMapUV[input.instanceID].uvOffset.x);
     tempUV.y = (1 - tempUV.y);
     tempUV.y *= (lightMapUV[input.instanceID].scaling.y);
+    tempUV.y += (lightMapUV[input.instanceID].uvOffset.y);
     tempUV.y = (1 - tempUV.y);
     
-    tempUV.x += (lightMapUV[input.instanceID].uvOffset.x);
-    tempUV.y += (-lightMapUV[input.instanceID].uvOffset.y);
     
     output.uv = input.uv;
     output.lightUV = tempUV;
