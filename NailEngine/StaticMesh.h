@@ -35,9 +35,8 @@ public:
 			auto mutex = FrustumCullingManager::Instance.Get().GetRenderInfoMutex(i);
 			if (mutex)
 			{
-				//std::scoped_lock<std::mutex> lock(*mutex.get());
+				std::scoped_lock<std::mutex> lock(*mutex.get());
 				i->wtm = wtm;
-				//mutex->unlock();
 			}
 			else
 			{

@@ -28,40 +28,30 @@ void FrustumCullingManager::FrustumCulling()
 
 	auto& renderInfoVec = InstancingManager::Instance.Get().GetStaticRenderInfoVec();
 
-	//static bool onceCulled = false;
-	//static int counter = 0;
-	//counter++;
-	//if (onceCulled)
-	//	return;
-	//if (renderInfoVec.size() > 0 && counter > 300)
-	//	onceCulled = true;
 
 	for (auto& each : renderInfoVec)
 	{
 		for (auto& each2 : each.second)
 		{
 			auto iter = this->renderInfoMutexMap.find(each2);
-			//std::scoped_lock<std::mutex> lock(*iter->second.get());
 
 			// 컬링 로직 실행
+			if (iter->first == nullptr) continue;
+
+			if (iter->first->mesh == nullptr) continue;
+
+			if (iter->first->isActive == false) continue;
+
+			auto& frustum = CameraManager::Instance.Get().GetMainCamera()->GetFrustum();
+			std::scoped_lock<std::mutex> lock(*iter->second.get());
+			auto boundingBox = iter->first->mesh->GetBoundingBox(iter->first->wtm, iter->first->materialIndex);
+			if (frustum.Contains(boundingBox) == DirectX::ContainmentType::DISJOINT)
 			{
-				if (iter->first == nullptr) continue;
-
-				if (iter->first->mesh == nullptr) continue;
-
-				if (iter->first->isActive == false) continue;
-
-				auto& frustum = CameraManager::Instance.Get().GetMainCamera()->GetFrustum();
-				auto aabb = iter->first->mesh->GetBoundingBox(iter->first->wtm, iter->first->materialIndex);
-
-				if (frustum.Contains(aabb) == DirectX::ContainmentType::DISJOINT)
-				{
-					iter->first->isCulled = true;
-				}
-				else
-				{
-					iter->first->isCulled = false;
-				}
+				iter->first->isCulled = true;
+			}
+			else
+			{
+				iter->first->isCulled = false;
 			}
 
 			if (this->isChange)
